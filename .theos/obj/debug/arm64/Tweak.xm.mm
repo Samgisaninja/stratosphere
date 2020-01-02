@@ -30,7 +30,7 @@ CGPoint dockPoint;
 #define _LOGOS_RETURN_RETAINED
 #endif
 
-@class SBDockView; @class SBRootFolderView; 
+@class SBRootFolderView; @class SBDockView; 
 
 
 #line 11 "Tweak.xm"
@@ -143,14 +143,14 @@ static void _logos_method$ios13$SBDockView$setCenter$(_LOGOS_SELF_TYPE_NORMAL SB
 
 
 
+static void (*_logos_orig$old$SBRootFolderView$_coverSheetWillDismiss$)(_LOGOS_SELF_TYPE_NORMAL SBRootFolderView* _LOGOS_SELF_CONST, SEL, id); static void _logos_method$old$SBRootFolderView$_coverSheetWillDismiss$(_LOGOS_SELF_TYPE_NORMAL SBRootFolderView* _LOGOS_SELF_CONST, SEL, id); 
 
 
 
-
-
-
-
-
+static void _logos_method$old$SBRootFolderView$_coverSheetWillDismiss$(_LOGOS_SELF_TYPE_NORMAL SBRootFolderView* _LOGOS_SELF_CONST __unused self, SEL __unused _cmd, id arg1){
+	self.dockEdge = 1;
+	_logos_orig$old$SBRootFolderView$_coverSheetWillDismiss$(self, _cmd, arg1);
+}
 
 
 
@@ -158,10 +158,14 @@ static void _logos_method$ios13$SBDockView$setCenter$(_LOGOS_SELF_TYPE_NORMAL SB
 
 
 static __attribute__((constructor)) void _logosLocalCtor_25183486(int __unused argc, char __unused **argv, char __unused **envp){
-	
-	
-		{Class _logos_class$ios13$SBRootFolderView = objc_getClass("SBRootFolderView"); MSHookMessageEx(_logos_class$ios13$SBRootFolderView, @selector(updateIconListIndexAndVisibility:), (IMP)&_logos_method$ios13$SBRootFolderView$updateIconListIndexAndVisibility$, (IMP*)&_logos_orig$ios13$SBRootFolderView$updateIconListIndexAndVisibility$);Class _logos_class$ios13$SBDockView = objc_getClass("SBDockView"); MSHookMessageEx(_logos_class$ios13$SBDockView, @selector(frame), (IMP)&_logos_method$ios13$SBDockView$frame, (IMP*)&_logos_orig$ios13$SBDockView$frame);MSHookMessageEx(_logos_class$ios13$SBDockView, @selector(setFrame:), (IMP)&_logos_method$ios13$SBDockView$setFrame$, (IMP*)&_logos_orig$ios13$SBDockView$setFrame$);MSHookMessageEx(_logos_class$ios13$SBDockView, @selector(initWithFrame:), (IMP)&_logos_method$ios13$SBDockView$initWithFrame$, (IMP*)&_logos_orig$ios13$SBDockView$initWithFrame$);MSHookMessageEx(_logos_class$ios13$SBDockView, @selector(center), (IMP)&_logos_method$ios13$SBDockView$center, (IMP*)&_logos_orig$ios13$SBDockView$center);MSHookMessageEx(_logos_class$ios13$SBDockView, @selector(setCenter:), (IMP)&_logos_method$ios13$SBDockView$setCenter$, (IMP*)&_logos_orig$ios13$SBDockView$setCenter$);}
-	
-		
-	
+	NSDictionary *prefs = [[NSUserDefaults standardUserDefaults] persistentDomainForName:@"com.samgisaninja.stratosphereprefs"];
+	BOOL isEnabled = [[prefs objectForKey:@"isEnabled"] boolValue];
+	if (isEnabled) {
+		double CFNumber = kCFCoreFoundationVersionNumber;
+		if (CFNumber >= 1600.0) {
+			{Class _logos_class$ios13$SBRootFolderView = objc_getClass("SBRootFolderView"); MSHookMessageEx(_logos_class$ios13$SBRootFolderView, @selector(updateIconListIndexAndVisibility:), (IMP)&_logos_method$ios13$SBRootFolderView$updateIconListIndexAndVisibility$, (IMP*)&_logos_orig$ios13$SBRootFolderView$updateIconListIndexAndVisibility$);Class _logos_class$ios13$SBDockView = objc_getClass("SBDockView"); MSHookMessageEx(_logos_class$ios13$SBDockView, @selector(frame), (IMP)&_logos_method$ios13$SBDockView$frame, (IMP*)&_logos_orig$ios13$SBDockView$frame);MSHookMessageEx(_logos_class$ios13$SBDockView, @selector(setFrame:), (IMP)&_logos_method$ios13$SBDockView$setFrame$, (IMP*)&_logos_orig$ios13$SBDockView$setFrame$);MSHookMessageEx(_logos_class$ios13$SBDockView, @selector(initWithFrame:), (IMP)&_logos_method$ios13$SBDockView$initWithFrame$, (IMP*)&_logos_orig$ios13$SBDockView$initWithFrame$);MSHookMessageEx(_logos_class$ios13$SBDockView, @selector(center), (IMP)&_logos_method$ios13$SBDockView$center, (IMP*)&_logos_orig$ios13$SBDockView$center);MSHookMessageEx(_logos_class$ios13$SBDockView, @selector(setCenter:), (IMP)&_logos_method$ios13$SBDockView$setCenter$, (IMP*)&_logos_orig$ios13$SBDockView$setCenter$);}
+		} else {
+			{Class _logos_class$old$SBRootFolderView = objc_getClass("SBRootFolderView"); MSHookMessageEx(_logos_class$old$SBRootFolderView, @selector(_coverSheetWillDismiss:), (IMP)&_logos_method$old$SBRootFolderView$_coverSheetWillDismiss$, (IMP*)&_logos_orig$old$SBRootFolderView$_coverSheetWillDismiss$);}
+		}
+	}
 }

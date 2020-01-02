@@ -132,10 +132,14 @@ CGPoint dockPoint;
 
 
 %ctor{
-	double CFNumber = kCFCoreFoundationVersionNumber;
-	if (CFNumber >= 1600.0) {
-		%init(ios13);
-	} else {
-		%init(old);
+	NSDictionary *prefs = [[NSUserDefaults standardUserDefaults] persistentDomainForName:@"com.samgisaninja.stratosphereprefs"];
+	BOOL isEnabled = [[prefs objectForKey:@"isEnabled"] boolValue];
+	if (isEnabled) {
+		double CFNumber = kCFCoreFoundationVersionNumber;
+		if (CFNumber >= 1600.0) {
+			%init(ios13);
+		} else {
+			%init(old);
+		}
 	}
 }
