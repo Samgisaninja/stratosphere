@@ -8,6 +8,8 @@ CGPoint dockPoint;
 @property (nonatomic,readonly) SBDockView *dockView; 
 @end
 
+%group ios13
+
 %hook SBRootFolderView
 
 -(void)updateIconListIndexAndVisibility:(BOOL)arg1{
@@ -59,3 +61,28 @@ CGPoint dockPoint;
 }
 
 %end
+
+%end
+
+%group old
+
+%hook SBRootFolderView
+
+-(void)_coverSheetWillDismiss:(id) arg1{
+	self.dockEdge = 1;
+	%orig;
+}
+
+%end
+
+%end
+
+
+%ctor{
+	double CFNumber = kCFCoreFoundationVersionNumber;
+	if (CFNumber >= 1600.0) {
+		%init(ios13);
+	} else {
+		%init(old);
+	}
+}
