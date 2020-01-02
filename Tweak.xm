@@ -134,6 +134,9 @@ CGPoint dockPoint;
 %ctor{
 	NSDictionary *prefs = [[NSUserDefaults standardUserDefaults] persistentDomainForName:@"com.samgisaninja.stratosphereprefs"];
 	BOOL isEnabled = [[prefs objectForKey:@"isEnabled"] boolValue];
+	if (!prefs) {
+		isEnabled = TRUE;
+	}
 	if (isEnabled) {
 		double CFNumber = kCFCoreFoundationVersionNumber;
 		if (CFNumber >= 1600.0) {

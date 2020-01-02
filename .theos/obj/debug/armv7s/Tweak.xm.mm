@@ -30,7 +30,7 @@ CGPoint dockPoint;
 #define _LOGOS_RETURN_RETAINED
 #endif
 
-@class SBDockView; @class SBRootFolderView; 
+@class SBRootFolderView; @class SBDockView; 
 
 
 #line 11 "Tweak.xm"
@@ -160,6 +160,9 @@ static void _logos_method$old$SBRootFolderView$_coverSheetWillDismiss$(_LOGOS_SE
 static __attribute__((constructor)) void _logosLocalCtor_25183486(int __unused argc, char __unused **argv, char __unused **envp){
 	NSDictionary *prefs = [[NSUserDefaults standardUserDefaults] persistentDomainForName:@"com.samgisaninja.stratosphereprefs"];
 	BOOL isEnabled = [[prefs objectForKey:@"isEnabled"] boolValue];
+	if (!prefs) {
+		isEnabled = TRUE;
+	}
 	if (isEnabled) {
 		double CFNumber = kCFCoreFoundationVersionNumber;
 		if (CFNumber >= 1600.0) {
