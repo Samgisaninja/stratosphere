@@ -13,13 +13,20 @@ CGPoint dockPoint;
 %hook SBRootFolderView
 
 -(void)updateIconListIndexAndVisibility:(BOOL)arg1{
-    self.dockEdge = 1;
-	self.dockView.frame = CGRectMake(0, 50, self.dockView.frame.size.width, self.dockView.frame.size.height);
-	if (!dockPoint.x) {
-		dockPoint = CGPointMake(self.dockView.center.x, (self.dockView.center.y + 50));
+    if (@available(ios 13, *)) {
+        self.dockEdge = 1;
+        UIEdgeInsets safeAreaInsets = [[[UIApplication sharedApplication] keyWindow] safeAreaInsets];
+        if (safeAreaInsets.bottom != 0) {
+            self.dockView.frame = CGRectMake(0, 50, self.dockView.frame.size.width, self.dockView.frame.size.height);
+            if (!dockPoint.x) {
+                dockPoint = CGPointMake(self.dockView.center.x, (self.dockView.center.y + 50));
+            }
+            self.dockView.center = dockPoint;
+        }
+        %orig;
+    } else {
+		%orig;
 	}
-	self.dockView.center = dockPoint;
-    %orig;
 }
 
 
@@ -28,36 +35,82 @@ CGPoint dockPoint;
 %hook SBDockView
 
 -(CGRect)frame{
-	CGRect origFrame = %orig;
-	CGRect fixedFrame = CGRectMake(0, 50, origFrame.size.width, origFrame.size.height);
-	return fixedFrame;
+    if (@available(ios 13, *)) {
+        UIEdgeInsets safeAreaInsets = [[[UIApplication sharedApplication] keyWindow] safeAreaInsets];
+        if (safeAreaInsets.bottom != 0){
+            CGRect origFrame = %orig;
+            CGRect fixedFrame = CGRectMake(0, 50, origFrame.size.width, origFrame.size.height);
+            return fixedFrame;
+        } else {
+            return %orig;
+        }
+    } else {
+		return %orig;
+	}
 }
 
 -(void)setFrame:(CGRect)arg1{
-	CGRect origFrame = arg1;
-	CGRect fixedFrame = CGRectMake(0, 50, origFrame.size.width, origFrame.size.height);
-	%orig(fixedFrame);
+    if (@available(ios 13, *)) {
+        UIEdgeInsets safeAreaInsets = [[[UIApplication sharedApplication] keyWindow] safeAreaInsets];
+        if (safeAreaInsets.bottom != 0){
+            CGRect origFrame = arg1;
+            CGRect fixedFrame = CGRectMake(0, 50, origFrame.size.width, origFrame.size.height);
+            %orig(fixedFrame);
+        } else {
+            %orig;
+        }
+    } else {
+		%orig;
+	}
 }
 
 -(void)initWithFrame:(CGRect)arg1{
-	CGRect origFrame = arg1;
-	CGRect fixedFrame = CGRectMake(0, 50, origFrame.size.width, origFrame.size.height);
-	%orig(fixedFrame);
+    if (@available(ios 13, *)) {
+        UIEdgeInsets safeAreaInsets = [[[UIApplication sharedApplication] keyWindow] safeAreaInsets];
+        if (safeAreaInsets.bottom != 0){
+            CGRect origFrame = arg1;
+            CGRect fixedFrame = CGRectMake(0, 50, origFrame.size.width, origFrame.size.height);
+            %orig(fixedFrame);
+        } else {
+            %orig;
+        }
+    } else {
+		%orig;
+	}
 }
 
 -(CGPoint)center{
-	if (!dockPoint.x) {
-		CGPoint origPoint = %orig;
-		dockPoint = CGPointMake(origPoint.x, (origPoint.y + 50));
+    if (@available(ios 13, *)) {
+        UIEdgeInsets safeAreaInsets = [[[UIApplication sharedApplication] keyWindow] safeAreaInsets];
+        if (safeAreaInsets.bottom != 0){
+            if (!dockPoint.x) {
+                CGPoint origPoint = %orig;
+                dockPoint = CGPointMake(origPoint.x, (origPoint.y + 50));
+            }
+            return dockPoint;
+        } else {
+            return %orig;
+        }
+    } else {
+		return %orig;
 	}
-	return dockPoint;
 }
+
 -(void)setCenter:(CGPoint)arg1{
-	if (!dockPoint.x) {
-		CGPoint origPoint = arg1;
-		dockPoint = CGPointMake(origPoint.x, (origPoint.y + 50));
+    if (@available(iOS 13, *)) {
+        UIEdgeInsets safeAreaInsets = [[[UIApplication sharedApplication] keyWindow] safeAreaInsets];
+        if (safeAreaInsets.bottom != 0){
+            if (!dockPoint.x) {
+                CGPoint origPoint = arg1;
+                dockPoint = CGPointMake(origPoint.x, (origPoint.y + 50));
+            }
+            %orig(dockPoint);
+        } else {
+            %orig;
+        }
+    } else {
+		%orig;
 	}
-	%orig(dockPoint);
 }
 
 %end
