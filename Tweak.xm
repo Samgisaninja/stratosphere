@@ -85,6 +85,7 @@ BOOL initialized;
     %orig;
 }
 
+
 %end
 
 %hook SBIconModel
