@@ -1,4 +1,5 @@
 CGPoint dockPoint;
+BOOL shouldHide;
 
 @interface SBDockView : UIView
 @end
@@ -35,6 +36,9 @@ CGPoint dockPoint;
 %hook SBDockView
 
 -(CGRect)frame{
+    if (shouldHide) {
+        [self setHidden:TRUE];
+    }
     if (@available(ios 13, *)) {
         UIEdgeInsets safeAreaInsets = [[[UIApplication sharedApplication] keyWindow] safeAreaInsets];
         if (safeAreaInsets.bottom != 0){
@@ -50,6 +54,9 @@ CGPoint dockPoint;
 }
 
 -(void)setFrame:(CGRect)arg1{
+    if (shouldHide) {
+        [self setHidden:TRUE];
+    }
     if (@available(ios 13, *)) {
         UIEdgeInsets safeAreaInsets = [[[UIApplication sharedApplication] keyWindow] safeAreaInsets];
         if (safeAreaInsets.bottom != 0){
@@ -65,6 +72,9 @@ CGPoint dockPoint;
 }
 
 -(void)initWithFrame:(CGRect)arg1{
+    if (shouldHide) {
+        [self setHidden:TRUE];
+    }
     if (@available(ios 13, *)) {
         UIEdgeInsets safeAreaInsets = [[[UIApplication sharedApplication] keyWindow] safeAreaInsets];
         if (safeAreaInsets.bottom != 0){
@@ -80,6 +90,9 @@ CGPoint dockPoint;
 }
 
 -(CGPoint)center{
+    if (shouldHide) {
+        [self setHidden:TRUE];
+    }
     if (@available(ios 13, *)) {
         UIEdgeInsets safeAreaInsets = [[[UIApplication sharedApplication] keyWindow] safeAreaInsets];
         if (safeAreaInsets.bottom != 0){
@@ -97,6 +110,9 @@ CGPoint dockPoint;
 }
 
 -(void)setCenter:(CGPoint)arg1{
+    if (shouldHide) {
+        [self setHidden:TRUE];
+    }
     if (@available(iOS 13, *)) {
         UIEdgeInsets safeAreaInsets = [[[UIApplication sharedApplication] keyWindow] safeAreaInsets];
         if (safeAreaInsets.bottom != 0){
@@ -111,6 +127,14 @@ CGPoint dockPoint;
     } else {
 		%orig;
 	}
+}
+
+-(void)setHidden:(BOOL)arg1{
+    if (shouldHide) {
+        %orig(TRUE);
+    } else {
+        %orig;
+    }
 }
 
 %end
@@ -134,6 +158,7 @@ CGPoint dockPoint;
 %ctor{
 	NSDictionary *prefs = [[NSUserDefaults standardUserDefaults] persistentDomainForName:@"com.samgisaninja.stratosphereprefs"];
 	BOOL isEnabled = [[prefs objectForKey:@"isEnabled"] boolValue];
+    shouldHide = [[prefs objectForKey:@"shouldHide"] boolValue];
 	if (!prefs) {
 		isEnabled = TRUE;
 	}
