@@ -1,0 +1,14 @@
+---
+name: Stratosphere
+icmd: killall -9 SpringBoard
+
+Stratosphere:
+  type: tweak
+  files:
+    - Tweak.xm
+
+stratosphereprefs:
+  dir: stratosphereprefs
+  type: prefs
+  files:
+    - STRRootListController.m

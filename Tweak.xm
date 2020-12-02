@@ -1,173 +1,129 @@
-CGPoint dockPoint;
+#include <UIKit/UIKit.h>
+#include "SpringBoardHome.h"
+
+BOOL isEnabled;
 BOOL shouldHide;
+BOOL initialized;
 
-@interface SBDockView : UIView
-@end
+#define safeAreaInsets [[[UIApplication sharedApplication] keyWindow] safeAreaInsets]
 
-@interface SBRootFolderView : UIView
-@property (nonatomic, assign, readwrite) NSUInteger dockEdge;
-@property (nonatomic,readonly) SBDockView *dockView; 
-@end
+#define kIconController [%c(SBIconController) sharedInstance]
+#define kRootFolderController [kIconController _rootFolderController]
+#define kIconModel [kIconController model]
+#define kDockView kRootFolderController.rootFolderView.dockView
 
-%group ios13
+#define boolValueForKey(prefs, key, defaultValue) ((prefs && [prefs objectForKey:key]) ? [[prefs objectForKey:key] boolValue] : defaultValue)
 
-%hook SBRootFolderView
+%hook SBRootFolderController
 
--(void)updateIconListIndexAndVisibility:(BOOL)arg1{
-    if (@available(ios 13, *)) {
-        self.dockEdge = 1;
-        UIEdgeInsets safeAreaInsets = [[[UIApplication sharedApplication] keyWindow] safeAreaInsets];
-        if (safeAreaInsets.bottom != 0) {
-            self.dockView.frame = CGRectMake(0, 50, self.dockView.frame.size.width, self.dockView.frame.size.height);
-            if (!dockPoint.x) {
-                dockPoint = CGPointMake(self.dockView.center.x, (self.dockView.center.y + 50));
-            }
-            self.dockView.center = dockPoint;
-        }
-        %orig;
-    } else {
-		%orig;
-	}
+-(void)viewDidLoad
+{
+    %orig;
+
+    if (!isEnabled)
+    {
+        self.dockEdge = 4;
+        return;
+    }
+
+    self.dockEdge = 1;
+    self.rootFolderView.dockView.hidden = shouldHide;
+    [[self.rootFolderView dockView].superview bringSubviewToFront:[self.rootFolderView dockView]];
 }
-
 
 %end
 
-%hook SBDockView
+%hook SBIconListView
 
--(CGRect)frame{
-    if (shouldHide) {
-        [self setHidden:TRUE];
+-(id)layout
+{
+    id x = %orig;
+
+    initialized = YES;
+
+    if (!isEnabled || shouldHide)
+    {
+        self.additionalLayoutInsets = UIEdgeInsetsMake(0,0,0,0);
+        return x;
     }
-    if (@available(ios 13, *)) {
-        UIEdgeInsets safeAreaInsets = [[[UIApplication sharedApplication] keyWindow] safeAreaInsets];
-        if (safeAreaInsets.bottom != 0){
-            CGRect origFrame = %orig;
-            CGRect fixedFrame = CGRectMake(0, 50, origFrame.size.width, origFrame.size.height);
-            return fixedFrame;
-        } else {
-            return %orig;
-        }
-    } else {
-		return %orig;
-	}
+
+    CGFloat dockHeight = kRootFolderController.dockHeight;
+    if ([self.iconLocation containsString:@"Root"])
+        self.additionalLayoutInsets = UIEdgeInsetsMake(dockHeight,0,-dockHeight,0);
+
+    kDockView.hidden = shouldHide;
+
+    return x;
 }
 
--(void)setFrame:(CGRect)arg1{
-    if (shouldHide) {
-        [self setHidden:TRUE];
-    }
-    if (@available(ios 13, *)) {
-        UIEdgeInsets safeAreaInsets = [[[UIApplication sharedApplication] keyWindow] safeAreaInsets];
-        if (safeAreaInsets.bottom != 0){
-            CGRect origFrame = arg1;
-            CGRect fixedFrame = CGRectMake(0, 50, origFrame.size.width, origFrame.size.height);
-            %orig(fixedFrame);
-        } else {
-            %orig;
-        }
-    } else {
-		%orig;
-	}
+%end
+
+%hook SBDockView 
+
+-(void)setHidden:(BOOL)arg 
+{
+    %orig(shouldHide ? YES : arg);
 }
 
--(void)initWithFrame:(CGRect)arg1{
-    if (shouldHide) {
-        [self setHidden:TRUE];
-    }
-    if (@available(ios 13, *)) {
-        UIEdgeInsets safeAreaInsets = [[[UIApplication sharedApplication] keyWindow] safeAreaInsets];
-        if (safeAreaInsets.bottom != 0){
-            CGRect origFrame = arg1;
-            CGRect fixedFrame = CGRectMake(0, 50, origFrame.size.width, origFrame.size.height);
-            %orig(fixedFrame);
-        } else {
-            %orig;
-        }
-    } else {
-		%orig;
-	}
-}
-
--(CGPoint)center{
-    if (shouldHide) {
-        [self setHidden:TRUE];
-    }
-    if (@available(ios 13, *)) {
-        UIEdgeInsets safeAreaInsets = [[[UIApplication sharedApplication] keyWindow] safeAreaInsets];
-        if (safeAreaInsets.bottom != 0){
-            if (!dockPoint.x) {
-                CGPoint origPoint = %orig;
-                dockPoint = CGPointMake(origPoint.x, (origPoint.y + 50));
-            }
-            return dockPoint;
-        } else {
-            return %orig;
-        }
-    } else {
-		return %orig;
-	}
+-(BOOL)isHidden
+{
+    return shouldHide ? YES : %orig;
 }
 
 -(void)setCenter:(CGPoint)arg1{
-    if (shouldHide) {
-        [self setHidden:TRUE];
+    if (shouldHide)
+    {
+        // %orig(CGPointMake(arg1.x, (arg1.y - 1000))); (maybe better? less objc calls)
+        self.hidden = YES;
+        return;
     }
-    if (@available(iOS 13, *)) {
-        UIEdgeInsets safeAreaInsets = [[[UIApplication sharedApplication] keyWindow] safeAreaInsets];
-        if (safeAreaInsets.bottom != 0){
-            if (!dockPoint.x) {
-                CGPoint origPoint = arg1;
-                dockPoint = CGPointMake(origPoint.x, (origPoint.y + 50));
-            }
-            %orig(dockPoint);
-        } else {
-            %orig;
-        }
-    } else {
-		%orig;
-	}
+    if (@available(ios 13, *) && safeAreaInsets.bottom != 0 && isEnabled) 
+    {
+        %orig(CGPointMake(arg1.x, (arg1.y + 50)));
+        return;
+    }
+    %orig;
 }
 
--(void)setHidden:(BOOL)arg1{
-    if (shouldHide) {
-        %orig(TRUE);
-    } else {
-        %orig;
+%end
+
+%hook SBIconModel
+
+-(void)layout
+{
+    %orig;
+    
+    [kDockView.superview bringSubviewToFront:kDockView];
+}
+
+%end
+
+static void *observer = NULL;
+
+void preferencesChanged(){
+	NSDictionary *prefs = [[NSUserDefaults standardUserDefaults] persistentDomainForName:@"com.samgisaninja.stratosphereprefs"];
+	isEnabled = boolValueForKey(prefs, @"isEnabled", YES);
+	shouldHide = boolValueForKey(prefs, @"shouldHide", NO) & isEnabled; // If isEnabled is false, shouldHide will be false no matter what.
+    if (!initialized)
+    return;
+    if ([%c(SBIconController) sharedInstance])
+    {
+        kRootFolderController.dockEdge = isEnabled ? 3 : 4;
+        kDockView.hidden = shouldHide;
+        [kIconModel layout];
     }
 }
-
-%end
-
-%end
-
-%group old
-
-%hook SBRootFolderView
-
--(void)_coverSheetWillDismiss:(id) arg1{
-	self.dockEdge = 1;
-	%orig;
-}
-
-%end
-
-%end
-
 
 %ctor{
-	NSDictionary *prefs = [[NSUserDefaults standardUserDefaults] persistentDomainForName:@"com.samgisaninja.stratosphereprefs"];
-	BOOL isEnabled = [[prefs objectForKey:@"isEnabled"] boolValue];
-    shouldHide = [[prefs objectForKey:@"shouldHide"] boolValue];
-	if (!prefs) {
-		isEnabled = TRUE;
-	}
-	if (isEnabled) {
-		double CFNumber = kCFCoreFoundationVersionNumber;
-		if (CFNumber >= 1600.0) {
-			%init(ios13);
-		} else {
-			%init(old);
-		}
-	}
+
+    preferencesChanged();
+
+    CFNotificationCenterAddObserver(
+        CFNotificationCenterGetDarwinNotifyCenter(),
+        &observer,
+        (CFNotificationCallback)preferencesChanged,
+        (CFStringRef)@"com.samgisaninja.stratosphereprefs/reload",
+        NULL,
+        CFNotificationSuspensionBehaviorDeliverImmediately
+    );
 }
