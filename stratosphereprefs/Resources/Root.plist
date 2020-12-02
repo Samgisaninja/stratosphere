@@ -21,6 +21,8 @@
 			<string>isEnabled</string>
 			<key>label</key>
 			<string>Enable</string>
+			<key>PostNotification</key>
+			<string>com.samgisaninja.stratosphereprefs/reload</string>
 		</dict>
 		<dict>
 			<key>cell</key>
@@ -39,21 +41,10 @@
 			<string>shouldHide</string>
 			<key>label</key>
 			<string>Hide Dock</string>
+			<key>PostNotification</key>
+			<string>com.samgisaninja.stratosphereprefs/reload</string>
 		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSGroupCell</string>
-			<key>label</key>
-			<string>Respring to apply changes</string>
-		</dict>
-		<dict>
-			<key>cell</key>
-			<string>PSButtonCell</string>
-			<key>label</key>
-			<string>Respring</string>
-			<key>action</key>
-			<string>respring</string>
-		</dict>
+		
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
